@@ -1,4 +1,4 @@
-package com.fodapi;
+package com.fodapi.entity;
 
 import jakarta.persistence.*;
 

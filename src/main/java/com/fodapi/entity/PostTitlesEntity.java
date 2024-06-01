@@ -1,4 +1,4 @@
-package com.fodapi;
+package com.fodapi.entity;
 
 import jakarta.persistence.*;
 
@@ -22,11 +22,11 @@ public class PostTitlesEntity {
     @Basic
     @Column(name = "user_id_fk")
     private String userIdFk;
-    @OneToMany(mappedBy = "postTitlesByPostTitleFk")
+    @OneToMany(mappedBy = "id")
     private Collection<CommentsEntity> commentsById;
-    @OneToMany(mappedBy = "postTitlesByPostIdFk")
+    @OneToMany(mappedBy = "id")
     private Collection<LikesEntity> likesById;
-    @OneToMany(mappedBy = "postTitlesByPostTitleIdFk")
+    @OneToMany(mappedBy = "id")
     private Collection<PostContentsEntity> postContentsById;
 
     public String getTopic() {

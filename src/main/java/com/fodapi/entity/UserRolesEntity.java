@@ -1,4 +1,4 @@
-package com.fodapi;
+package com.fodapi.entity;
 
 import jakarta.persistence.*;
 
@@ -17,9 +17,9 @@ public class UserRolesEntity {
     @Id
     @Column(name = "id")
     private String id;
-    @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
-    private RolesEntity rolesByRoleId;
+//    @ManyToOne
+//    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
+//    private RolesEntity rolesByRoleId;
 
     public String getUserId() {
         return userId;
@@ -58,11 +58,11 @@ public class UserRolesEntity {
         return Objects.hash(userId, roleId, id);
     }
 
-    public RolesEntity getRolesByRoleId() {
-        return rolesByRoleId;
-    }
-
-    public void setRolesByRoleId(RolesEntity rolesByRoleId) {
-        this.rolesByRoleId = rolesByRoleId;
-    }
+//    public RolesEntity getRolesByRoleId() {
+//        return rolesByRoleId;
+//    }
+//
+//    public void setRolesByRoleId(RolesEntity rolesByRoleId) {
+//        this.rolesByRoleId = rolesByRoleId;
+//    }
 }

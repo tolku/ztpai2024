@@ -1,6 +1,10 @@
-package com.fodapi;
+package com.fodapi.entity;
 
 import jakarta.persistence.*;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -28,13 +32,13 @@ public class UsersEntity {
     @Basic
     @Column(name = "cookie_expiration_date")
     private Timestamp cookieExpirationDate;
-    @OneToMany(mappedBy = "usersByUserIdFk")
+    @OneToMany(mappedBy = "id")
     private Collection<CommentsEntity> commentsById;
-    @OneToMany(mappedBy = "usersByUserIdFk")
+    @OneToMany(mappedBy = "id")
     private Collection<LikesEntity> likesById;
-    @OneToMany(mappedBy = "usersByUserIdFk")
+    @OneToMany(mappedBy = "id")
     private Collection<PostTitlesEntity> postTitlesById;
-    @OneToMany(mappedBy = "usersByUserId")
+    @OneToMany(mappedBy = "id")
     private Collection<UserRolesEntity> userRolesById;
 
     public String getName() {
