@@ -1,9 +1,11 @@
 package com.fodapi.controllers;
 
 import com.fodapi.components.UserComponent;
+import com.fodapi.dto.FullPostDTO;
 import com.fodapi.entity.PostContentsEntity;
 import com.fodapi.entity.PostTitlesEntity;
 import com.fodapi.entity.UsersEntity;
+import com.fodapi.repository.FullPostRepository;
 import com.fodapi.repository.PostContentRepository;
 import com.fodapi.repository.PostTitleRepository;
 import com.fodapi.repository.UserRepository;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -39,6 +42,9 @@ public class PostController {
 
     @Autowired
     PostContentRepository postContentRepository;
+
+    @Autowired
+    FullPostRepository fullPostRepository;
 
     @PostMapping("/addPost")
     public ResponseEntity addPost(@RequestBody Map<String, String> requestBody,
@@ -126,7 +132,20 @@ public class PostController {
         postTitleRepository.removePostById(postIdToBeDeleted);
 
         return new ResponseEntity("Post removed!", HttpStatusCode.valueOf(200));
+    }
 
+    @GetMapping("/displayPosts")
+    public ResponseEntity displayPosts(HttpServletRequest httpRequest) {
+
+        String jwt = httpRequest.getHeader("jwt");
+        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
+                userRepository.retrieveUserByToken(jwt))) {
+            return new ResponseEntity("Posts cannot be displayed - jwt denied", HttpStatusCode.valueOf(500));
+        }
+
+        List<FullPostDTO> fullPosts = fullPostRepository.getPostContent();
+
+        throw new RuntimeException();
     }
 
     private boolean isPostValid(PostTitlesEntity postTitle, PostContentsEntity postContent) {
