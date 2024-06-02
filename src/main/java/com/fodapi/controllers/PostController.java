@@ -1,5 +1,6 @@
 package com.fodapi.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fodapi.components.UserComponent;
 import com.fodapi.dto.FullPostDTO;
 import com.fodapi.entity.PostContentsEntity;
@@ -11,8 +12,11 @@ import com.fodapi.repository.PostTitleRepository;
 import com.fodapi.repository.UserRepository;
 import com.fodapi.services.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -134,8 +138,16 @@ public class PostController {
         return new ResponseEntity("Post removed!", HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("/displayPosts")
-    public ResponseEntity displayPosts(HttpServletRequest httpRequest) {
+    @GetMapping(value = "/displayPosts", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity displayPosts(@RequestParam(value="startIndex") String startIndex,
+                                       @RequestParam(value="endIndex") String endIndex,
+                                       HttpServletRequest httpRequest) throws JsonProcessingException {
+
+        if (Integer.parseInt(startIndex) < 0 ||
+                Integer.parseInt(startIndex) > Integer.parseInt(endIndex) ||
+                Integer.parseInt(endIndex) < 0) {
+            return new ResponseEntity("Wrong indexes!", HttpStatusCode.valueOf(500));
+        }
 
         String jwt = httpRequest.getHeader("jwt");
         if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
@@ -143,9 +155,13 @@ public class PostController {
             return new ResponseEntity("Posts cannot be displayed - jwt denied", HttpStatusCode.valueOf(500));
         }
 
-        List<FullPostDTO> fullPosts = fullPostRepository.getPostContent();
+        List<FullPostDTO> fullPostDTOS = fullPostRepository.getPostContent()
+                .subList(Integer.parseInt(startIndex), Integer.parseInt(endIndex));
 
-        throw new RuntimeException();
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(fullPostDTOS);
+
+        return new ResponseEntity(json, HttpStatusCode.valueOf(200));
     }
 
     private boolean isPostValid(PostTitlesEntity postTitle, PostContentsEntity postContent) {
