@@ -4,7 +4,6 @@ import com.fodapi.services.JwtService;
 import com.fodapi.components.UserComponent;
 import com.fodapi.entity.UsersEntity;
 import com.fodapi.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatusCode;
@@ -27,20 +26,23 @@ public class LoginController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    UserComponent userComponent;
+
     @PostMapping("/login")
-    @Transactional
     protected ResponseEntity<String> login(@RequestBody UsersEntity user) {
         UsersEntity userFromDb = userRepository.retrieveUserByEmail(user.getEmail());
 
-        if (userFromDb == null || !UserComponent.isCredentialsValid(user, userFromDb)) {
+        if (userFromDb == null || !userComponent.isCredentialsValid(user, userFromDb)) {
             return new ResponseEntity<>("Credentials mismatch!", HttpStatusCode.valueOf(301));
         }
 
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
-        String jwtToken = jwtService.createJWT(env.getProperty("jwt.issuer"), userFromDb.getEmail());
+        long currentMilis = System.currentTimeMillis();
+        String jwtToken = jwtService.createJWT(env.getProperty("jwt.issuer"), userFromDb.getEmail(), currentMilis);
         multiValueMap.add("jwt", jwtToken);
 
-        userRepository.updateUserTokenAndExpDate(jwtToken, env.getProperty("jwt.expiration_time"));
+        userRepository.updateUserTokenAndExpDate(userFromDb.getEmail(), jwtToken, env.getProperty("jwt.expiration_time"), currentMilis);
 
         return new ResponseEntity<>(multiValueMap, HttpStatusCode.valueOf(200));
     }

@@ -1,5 +1,7 @@
 package com.fodapi.services;
 
+import com.fodapi.components.UserComponent;
+import com.fodapi.entity.UsersEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -19,12 +21,11 @@ public class JwtService {
     @Autowired
     Environment env;
 
-    public String createJWT(String issuer, String subject) {
+    public String createJWT(String issuer, String subject, long currentMilis) {
 
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-        long nowMillis = System.currentTimeMillis();
-        Date now = new Date(nowMillis);
+        Date now = new Date(currentMilis);
 
         byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(env.getProperty("jwt.secret_key"));
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
@@ -35,7 +36,7 @@ public class JwtService {
                 .setIssuer(issuer)
                 .signWith(signatureAlgorithm, signingKey);
 
-        long expMillis = nowMillis + Integer.parseInt(env.getProperty("jwt.expiration_time"));
+        long expMillis = currentMilis + Integer.parseInt(env.getProperty("jwt.expiration_time"));
         Date exp = new Date(expMillis);
         builder.setExpiration(exp);
 
