@@ -65,7 +65,7 @@ public class PostTitleRepository {
     @Transactional
     public void removePostById(String postId) {
         try {
-            entityManager.createNativeQuery("DELETE FROM post_titles WHERE id =: postId")
+            entityManager.createNativeQuery("DELETE FROM post_titles WHERE id = :postId")
                     .setParameter("postId", postId)
                     .executeUpdate();
         } catch (Exception ex) {

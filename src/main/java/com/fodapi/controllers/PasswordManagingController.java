@@ -7,7 +7,6 @@ import com.fodapi.services.BCryptService;
 import com.fodapi.services.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.core.support.FragmentNotImplementedException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
