@@ -3,13 +3,11 @@ package com.fodapi.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fodapi.components.UserComponent;
 import com.fodapi.dto.FullPostDTO;
+import com.fodapi.dto.ViewablePostDTO;
 import com.fodapi.entity.PostContentsEntity;
 import com.fodapi.entity.PostTitlesEntity;
 import com.fodapi.entity.UsersEntity;
-import com.fodapi.repository.FullPostRepository;
-import com.fodapi.repository.PostContentRepository;
-import com.fodapi.repository.PostTitleRepository;
-import com.fodapi.repository.UserRepository;
+import com.fodapi.repository.*;
 import com.fodapi.services.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +47,9 @@ public class PostController {
 
     @Autowired
     FullPostRepository fullPostRepository;
+
+    @Autowired
+    ViewablePostRepository viewablePostRepository;
 
     @PostMapping("/addPost")
     public ResponseEntity addPost(@RequestBody Map<String, String> requestBody,
@@ -160,6 +161,23 @@ public class PostController {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(fullPostDTOS);
+
+        return new ResponseEntity(json, HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping(value = "/displayPost", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity displayPost(@RequestParam(value = "postId") String postId,
+                                      HttpServletRequest httpRequest) throws JsonProcessingException {
+        String jwt = httpRequest.getHeader("jwt");
+        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
+                userRepository.retrieveUserByToken(jwt))) {
+            return new ResponseEntity("Single Post cannot be displayed! - jwt denied", HttpStatusCode.valueOf(500));
+        }
+
+        List<ViewablePostDTO> viewablePostDTOS = viewablePostRepository.retrieveViewablePostWithComments(postId);
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(viewablePostDTOS);
 
         return new ResponseEntity(json, HttpStatusCode.valueOf(200));
     }
