@@ -9,13 +9,14 @@ import com.fodapi.entity.PostTitlesEntity;
 import com.fodapi.entity.UsersEntity;
 import com.fodapi.repository.*;
 import com.fodapi.services.JwtService;
-import jakarta.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,21 +53,14 @@ public class PostController {
     ViewablePostRepository viewablePostRepository;
 
     @PostMapping("/addPost")
-    public ResponseEntity addPost(@RequestBody Map<String, String> requestBody,
-                                  HttpServletRequest httpRequest) {
+    public ResponseEntity addPost(@RequestBody Map<String, String> requestBody) {
         PostTitlesEntity postTitle = new PostTitlesEntity();
         postTitle.setTopic(requestBody.get("topic"));
         PostContentsEntity postContent = new PostContentsEntity();
         postContent.setContent(requestBody.get("content"));
         postContent.setImagePath(requestBody.getOrDefault("image_path", null));
 
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("Password cannot be changed!", HttpStatusCode.valueOf(500));
-        }
-
-        UsersEntity user = userRepository.retrieveUserByToken(jwt);
+        UsersEntity user = userRepository.retrieveUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 
         if (!isPostValid(postTitle, postContent)) {
             return new ResponseEntity("Post is not valid!", HttpStatusCode.valueOf(500));
@@ -84,8 +78,7 @@ public class PostController {
     }
 
     @PostMapping("/editPost")
-    public ResponseEntity editPost(@RequestBody Map<String, String> requestBody,
-                                   HttpServletRequest httpRequest) {
+    public ResponseEntity editPost(@RequestBody Map<String, String> requestBody) {
         PostTitlesEntity postTitle = new PostTitlesEntity();
         postTitle.setTopic(requestBody.get("topic"));
         postTitle.setId(requestBody.get("postId"));
@@ -93,19 +86,13 @@ public class PostController {
         postContent.setContent(requestBody.get("content"));
         postContent.setImagePath(requestBody.getOrDefault("image_path", null));
 
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("Password cannot be changed!", HttpStatusCode.valueOf(500));
-        }
-
         if (!isPostValid(postTitle, postContent) || postTitle.getId() == null) {
             return new ResponseEntity("Post is not valid!", HttpStatusCode.valueOf(500));
         }
 
-        UsersEntity user = userRepository.retrieveUserByToken(jwt);
+        UsersEntity user = userRepository.retrieveUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 
-        if (!Objects.equals(postTitleRepository.retrievePostTitleUserById(postTitle.getId()), user.getId())) {
+        if (!Objects.equals(postTitleRepository.retrieveUserIdByPostTitleId(postTitle.getId()), user.getId())) {
             return new ResponseEntity("You can only edit your posts!", HttpStatusCode.valueOf(500));
         }
 
@@ -120,16 +107,9 @@ public class PostController {
     }
 
     @GetMapping("/deletePost")
-    public ResponseEntity removePost(@RequestParam(value="postId") String postIdToBeDeleted, HttpServletRequest httpRequest) {
-
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("Post cannot be removed!", HttpStatusCode.valueOf(500));
-        }
-
-        UsersEntity user = userRepository.retrieveUserByToken(jwt);
-        String postOwnerId = postTitleRepository.retrievePostTitleUserById(postIdToBeDeleted);
+    public ResponseEntity removePost(@RequestParam(value="postId") String postIdToBeDeleted, HttpServletResponse httpServletResponse) {
+        UsersEntity user = userRepository.retrieveUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+        String postOwnerId = postTitleRepository.retrieveUserIdByPostTitleId(postIdToBeDeleted);
         if (!Objects.equals(user.getId(), postOwnerId)) {
             return new ResponseEntity("You cannot remove a post which is not yours!", HttpStatusCode.valueOf(500));
         }
@@ -141,23 +121,18 @@ public class PostController {
 
     @GetMapping(value = "/displayPosts", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity displayPosts(@RequestParam(value="startIndex") String startIndex,
-                                       @RequestParam(value="endIndex") String endIndex,
-                                       HttpServletRequest httpRequest) throws JsonProcessingException {
+                                       @RequestParam(value="endIndex") String endIndex) throws JsonProcessingException {
 
         if (Integer.parseInt(startIndex) < 0 ||
-                Integer.parseInt(startIndex) > Integer.parseInt(endIndex) ||
+                Integer.parseInt(startIndex) >= Integer.parseInt(endIndex) ||
                 Integer.parseInt(endIndex) < 0) {
             return new ResponseEntity("Wrong indexes!", HttpStatusCode.valueOf(500));
         }
 
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("Posts cannot be displayed - jwt denied", HttpStatusCode.valueOf(500));
+        List<FullPostDTO> fullPostDTOS = fullPostRepository.getPostContent();
+        if (fullPostDTOS.size() > Integer.parseInt(endIndex)) {
+            fullPostDTOS = fullPostDTOS.subList(Integer.parseInt(startIndex), Integer.parseInt(endIndex));
         }
-
-        List<FullPostDTO> fullPostDTOS = fullPostRepository.getPostContent()
-                .subList(Integer.parseInt(startIndex), Integer.parseInt(endIndex));
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(fullPostDTOS);
@@ -166,13 +141,7 @@ public class PostController {
     }
 
     @GetMapping(value = "/displayPost", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity displayPost(@RequestParam(value = "postId") String postId,
-                                      HttpServletRequest httpRequest) throws JsonProcessingException {
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("Single Post cannot be displayed! - jwt denied", HttpStatusCode.valueOf(500));
-        }
+    public ResponseEntity displayPost(@RequestParam(value = "postId") String postId) throws JsonProcessingException {
 
         List<ViewablePostDTO> viewablePostDTOS = viewablePostRepository.retrieveViewablePostWithComments(postId);
 

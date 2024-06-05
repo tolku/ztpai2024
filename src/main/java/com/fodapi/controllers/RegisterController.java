@@ -1,12 +1,13 @@
 package com.fodapi.controllers;
 
 import com.fodapi.entity.UsersEntity;
+import com.fodapi.repository.AuthorityRepository;
 import com.fodapi.repository.UserRepository;
-import com.fodapi.services.BCryptService;
 import com.fodapi.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,17 +21,25 @@ public class RegisterController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    AuthorityRepository authorityRepository;
+
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody UsersEntity userToBeRegistered) {
         if (userToBeRegistered.getEmail() == null || userToBeRegistered.getPassword() == null
                 || userToBeRegistered.getName() == null
                 || userRepository.retrieveUserByEmail(userToBeRegistered.getEmail()) != null) {
-            return new ResponseEntity<>("Cannot register!", HttpStatusCode.valueOf(200));
+            return new ResponseEntity<>("Cannot register!", HttpStatusCode.valueOf(500));
         }
 
         userRepository.createNewUser(userToBeRegistered.getName(),
                 userToBeRegistered.getEmail(),
-                BCryptService.hashpw(userToBeRegistered.getPassword(), BCryptService.gensalt()));
+                passwordEncoder.encode(userToBeRegistered.getPassword()));
+
+        authorityRepository.addWriteAuthorityToUser(userToBeRegistered.getEmail());
 
         emailService.sendRegistrationConfirmationEmail(userToBeRegistered.getEmail());
 

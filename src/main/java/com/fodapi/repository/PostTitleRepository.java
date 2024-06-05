@@ -52,7 +52,7 @@ public class PostTitleRepository {
         }
     }
 
-    public String retrievePostTitleUserById(String id) {
+    public String retrieveUserIdByPostTitleId(String id) {
         try {
             return (String) entityManager.createNativeQuery("SELECT user_id_fk FROM post_titles WHERE id = :id")
                     .setParameter("id", id)

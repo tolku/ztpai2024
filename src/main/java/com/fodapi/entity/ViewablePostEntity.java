@@ -2,7 +2,6 @@ package com.fodapi.entity;
 
 import com.fodapi.dto.ViewablePostDTO;
 import jakarta.persistence.*;
-
 import java.sql.Timestamp;
 
 @Entity

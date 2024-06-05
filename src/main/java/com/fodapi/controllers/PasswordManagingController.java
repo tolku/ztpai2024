@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,17 +27,9 @@ public class PasswordManagingController {
     UserComponent userComponent;
 
     @PostMapping("/changePassword")
-    public ResponseEntity changePassword(@RequestBody UsersEntity user, HttpServletRequest httpRequest) {
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("Password cannot be changed!", HttpStatusCode.valueOf(200));
-        }
-
-        userRepository.updateUserPassword(jwt,
+    public ResponseEntity changePassword(@RequestBody UsersEntity user) {
+        userRepository.updateUserPassword(SecurityContextHolder.getContext().getAuthentication().getName(),
                 BCryptService.hashpw(user.getPassword(), BCryptService.gensalt()));
-
-        userRepository.removeJwtToken(jwt);
 
         return new ResponseEntity("Password changed successfully, sign in!", HttpStatusCode.valueOf(200));
     }

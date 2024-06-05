@@ -6,10 +6,10 @@ import com.fodapi.repository.CommentRepository;
 import com.fodapi.repository.LikeRepository;
 import com.fodapi.repository.UserRepository;
 import com.fodapi.services.JwtService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,16 +34,9 @@ public class InteractionController {
     CommentRepository commentRepository;
 
     @PostMapping("/addLike")
-    public ResponseEntity addLike(@RequestParam(value = "postId") String postId,
-                        HttpServletRequest httpRequest) {
+    public ResponseEntity addLike(@RequestParam(value = "postId") String postId) {
 
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("jwt denied", HttpStatusCode.valueOf(500));
-        }
-
-        UsersEntity user = userRepository.retrieveUserByToken(jwt);
+        UsersEntity user = userRepository.retrieveUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 
         if (likeRepository.retrieveLikePerPostAndId(postId, user.getId()).isEmpty()) {
             likeRepository.createLike(postId, user.getId());
@@ -56,16 +49,9 @@ public class InteractionController {
 
     @PostMapping("/addComment")
     public ResponseEntity addComment(@RequestParam(value = "postId") String postId,
-                                     @RequestBody String commentContent,
-                                     HttpServletRequest httpRequest) {
+                                     @RequestBody String commentContent) {
 
-        String jwt = httpRequest.getHeader("jwt");
-        if (!userComponent.isUserValid(jwtService.decodeJWT(jwt),
-                userRepository.retrieveUserByToken(jwt))) {
-            return new ResponseEntity("jwt denied", HttpStatusCode.valueOf(500));
-        }
-
-        UsersEntity user = userRepository.retrieveUserByToken(jwt);
+        UsersEntity user = userRepository.retrieveUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 
         commentRepository.addComment(commentContent, postId, user.getId());
         return new ResponseEntity("Comment added!", HttpStatusCode.valueOf(200));

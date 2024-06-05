@@ -1,11 +1,6 @@
 package com.fodapi.entity;
 
 import jakarta.persistence.*;
-import org.apache.logging.log4j.util.Strings;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Objects;
