@@ -32,14 +32,14 @@ public class ViewablePostRepository {
                              "RIGHT JOIN ( SELECT res.topic " +
                              "AS topic, COUNT(l.post_id_fk) " +
                              "AS likes_count, res.creation_date " +
-                             "AS creation_date, l.post_id_fk " +
+                             "AS creation_date, res.id " +
                              "AS post_id, res.user_id_fk" +
                              " AS user_id" +
                              " FROM likes l RIGHT JOIN ( SELECT * " +
                              "FROM post_titles pt " +
                              "WHERE pt.id = :post_id ) res " +
                              "ON l.post_id_fk = res.id" +
-                             " GROUP BY l.post_id_fk, res.topic, res.creation_date, res.user_id_fk ) re " +
+                             " GROUP BY l.post_id_fk, res.topic, res.creation_date, res.user_id_fk, res.id ) re " +
                              "ON pc.post_title_id_fk = re.post_id ) r " +
                              "ON c.post_title_fk = r.post_id", "ViewablePostDTOMapping")
                      .setParameter("post_id", postId)

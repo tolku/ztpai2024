@@ -34,13 +34,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if ("/login".equals(request.getServletPath()) && "POST".equalsIgnoreCase(request.getMethod())) {
             try {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        request.getParameter("username"), request.getParameter("password"), new ArrayList<>());
+                        request.getParameter("email"), request.getParameter("password"), new ArrayList<>());
                 Authentication authResult = authenticationManager.authenticate(authToken);
 
                 if (authResult.isAuthenticated()) {
                     long currentMilis = System.currentTimeMillis();
                     String createdJWT = JwtService.createJWT("travelchan",
-                            request.getParameter("username"), currentMilis);
+                            request.getParameter("email"), currentMilis);
                     response.addHeader("Authorization", "Bearer " + createdJWT);
                 }
 

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -28,14 +29,14 @@ public class RegisterController {
     AuthorityRepository authorityRepository;
 
     @PostMapping("/register")
+    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity register(@RequestBody UsersEntity userToBeRegistered) {
         if (userToBeRegistered.getEmail() == null || userToBeRegistered.getPassword() == null
-                || userToBeRegistered.getName() == null
                 || userRepository.retrieveUserByEmail(userToBeRegistered.getEmail()) != null) {
             return new ResponseEntity<>("Cannot register!", HttpStatusCode.valueOf(500));
         }
 
-        userRepository.createNewUser(userToBeRegistered.getName(),
+        userRepository.createNewUser("imie",
                 userToBeRegistered.getEmail(),
                 passwordEncoder.encode(userToBeRegistered.getPassword()));
 
@@ -44,6 +45,5 @@ public class RegisterController {
         emailService.sendRegistrationConfirmationEmail(userToBeRegistered.getEmail());
 
         return new ResponseEntity("User created, log in", HttpStatusCode.valueOf(200));
-
     }
 }

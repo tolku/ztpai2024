@@ -1,0 +1,119 @@
+body {
+    margin: 0;
+}
+
+* {
+    font-family: Anaheim, sans-serif;
+    font-size: 18px;
+    line-height: normal;
+}
+
+.container {
+    background: rgba(238, 238, 170, 0.66);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo {
+    padding: 9vh 100vw;
+    background: linear-gradient(180deg, #EFA77F 0%, rgba(217, 217, 217, 0.00) 100.22%);
+}
+
+.register-containter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 350px;
+    height: 280px;
+    border: 1px solid #000;
+    border-top: none;
+    background: white;}
+
+.window-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 25px;
+    width: 100%;
+}
+
+.register-button-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+input {
+    width: 250px;
+    height: 22px;
+    margin-top: 30px;
+}
+
+
+.orange-styled-field {
+    background: #EFA77F;
+    border: 1px solid #000;
+}body {
+     margin: 0;
+ }
+
+* {
+    font-family: Anaheim, sans-serif;
+    font-size: 18px;
+    line-height: normal;
+}
+
+.container {
+    background: rgba(238, 238, 170, 0.66);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo {
+    padding: 9vh 100vw;
+    background: linear-gradient(180deg, #EFA77F 0%, rgba(217, 217, 217, 0.00) 100.22%);
+}
+
+.register-containter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 350px;
+    height: 280px;
+    border: 1px solid #000;
+    border-top: none;
+    background: white;}
+
+.window-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 25px;
+    width: 100%;
+}
+
+.register-button-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+input {
+    width: 250px;
+    height: 22px;
+    margin-top: 30px;
+}
+
+
+.orange-styled-field {
+    background: #EFA77F;
+    border: 1px solid #000;
+}
